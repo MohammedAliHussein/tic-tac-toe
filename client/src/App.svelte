@@ -1,36 +1,29 @@
 <script>
+  import Index from "./pages/Index.svelte";
+  import NoSupport from "./components/NoSupport.svelte";
+
+  let minWidth = 641;
+  let clientWidth = window.innerWidth;
+
 </script>
 
 <main>
-  <h1>Hello world!</h1>
+  {#if clientWidth > minWidth}
+    <Index />
+  {:else}
+    <NoSupport /> 
+  {/if}
 </main>
 
+<svelte:window bind:innerWidth={clientWidth} />
+
 <style>
-  :root {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  }
-
   main {
-    text-align: center;
-    padding: 1em;
-    margin: 0 auto;
-  }
-
-
-  h1 {
-    color: #ff3e00;
-    text-transform: uppercase;
-    font-size: 4rem;
-    font-weight: 100;
-    line-height: 1.1;
-    margin: 2rem auto;
-    max-width: 14rem;
-  }
-
-  @media (min-width: 480px) {
-    h1 {
-      max-width: none;
-    }
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(12, 12, 12);
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>
