@@ -1,5 +1,6 @@
 <script>
     import { createEventDispatcher } from "svelte";
+    import { Link } from "svelte-navigator";
     import { fly } from "svelte/transition";
     import { circOut, circInOut } from "svelte/easing";
     import axios from "axios";
@@ -52,7 +53,7 @@
             success = "success";
             const url = response.data.connection_url;
             dispatcher("connectionUrl", url);
-            //simulate click to transition to Game component
+            document.querySelector(".create-game-link").click();
         }
     }
 
@@ -72,7 +73,10 @@
             <h4 in:fly={getIn(5)} out:fly={getOut(5)}>Game Password</h4>
             <input class={success} type="password" placeholder="Game Password" in:fly={getIn(6)} out:fly={getOut(6)} bind:value={password} on:focus={clearError}>
         </div>
-        <button on:click|preventDefault={handleCreateGame} in:fly={getIn(7)}>Create and Join Game</button>
+        <button on:click|preventDefault={handleCreateGame} in:fly={getIn(7)} out:fly={getOut(7)}>Create and Join Game</button>
+        <div class="wrapper">
+            <Link class="create-game-link" to={"/game"}></Link>
+        </div>
     </div>
     <div class="request-error-container">
         {#if requestError}
@@ -143,6 +147,14 @@
 
     .success {
         border: 1px solid rgba(55, 254, 0, 0.25);        
+    }
+
+    .wrapper > :global(a) {
+        display: none;
+    }
+    
+    :global(a) {
+        display: none;
     }
 
     button {
