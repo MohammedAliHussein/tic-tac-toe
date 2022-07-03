@@ -3,11 +3,16 @@
   import Index from "./pages/Index.svelte";
   import Join from "./pages/Join.svelte";
   import Create from "./pages/Create.svelte";
+  import Game from "./pages/Game.svelte";
   import NoSupport from "./components/NoSupport.svelte";
 
   let minWidth = 641;
   let clientWidth = window.innerWidth;
+  let connectionUrl = "";
 
+  function handleConnectionUrl(event) {
+    connectionUrl = event.detail;
+  }
 </script>
 
 <main>
@@ -17,10 +22,13 @@
         <Index />
       </Route>
       <Route path="/join">
-        <Join />
+        <Join on:connectionUrl={handleConnectionUrl}/>
       </Route>
       <Route path="/create">
-        <Create />
+        <Create on:connectionUrl={handleConnectionUrl}/>
+      </Route>
+      <Route path="/game">
+        <Game connectionUrl={connectionUrl}/>
       </Route>
     {:else}
       <NoSupport /> 

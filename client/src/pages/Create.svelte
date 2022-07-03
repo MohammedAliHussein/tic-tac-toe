@@ -1,4 +1,5 @@
 <script>
+    import { createEventDispatcher } from "svelte";
     import { fly } from "svelte/transition";
     import { circOut, circInOut } from "svelte/easing";
     import axios from "axios";
@@ -8,6 +9,8 @@
     let password = "";
     let requestError = false;
     let requestErrorMessage = "";
+    let dispatcher = createEventDispatcher();
+    let success = "";
 
     function getIn(delayIndex) {
         return {
@@ -18,6 +21,8 @@
     }
 
     function getOut(delayIndex) {
+        if (success.length == 0) return { duration: 0 };
+
         return {
             delay: delayIndex * 100,
             y: -20,
@@ -42,6 +47,13 @@
             requestError = true;
             console.log(error.response);
         });
+
+        if(response.status === 200) {
+            success = "success";
+            const url = response.data.connection_url;
+            dispatcher("connectionUrl", url);
+            //simulate click to transition to Game component
+        }
     }
 
     function clearError() {
@@ -51,14 +63,14 @@
 
 <div class="container">
     <div class="create">
-        <h1 in:fly={getIn(0)}>Create a Game</h1>
+        <h1 in:fly={getIn(0)} out:fly={getOut(0)}>Create a Game</h1>
         <div class="form">
-            <h4 in:fly={getIn(1)}>Display Name</h4>
-            <input type="text" placeholder="Display Name" in:fly={getIn(2)} bind:value={displayName} on:focus={clearError}>
-            <h4 in:fly={getIn(3)} >Game ID</h4>
-            <input type="text" placeholder="Game ID" in:fly={getIn(4)}  bind:value={gameId} on:focus={clearError}>
-            <h4 in:fly={getIn(5)} >Game Password</h4>
-            <input type="password" placeholder="Game Password" in:fly={getIn(6)} bind:value={password} on:focus={clearError}>
+            <h4 in:fly={getIn(1)} out:fly={getOut(1)}>Display Name</h4>
+            <input class={success} type="text" placeholder="Display Name" in:fly={getIn(2)} out:fly={getOut(2)} bind:value={displayName} on:focus={clearError}>
+            <h4 in:fly={getIn(3)} out:fly={getOut(3)}>Game ID</h4>
+            <input class={success} type="text" placeholder="Game ID" in:fly={getIn(4)} out:fly={getOut(4)} bind:value={gameId} on:focus={clearError}>
+            <h4 in:fly={getIn(5)} out:fly={getOut(5)}>Game Password</h4>
+            <input class={success} type="password" placeholder="Game Password" in:fly={getIn(6)} out:fly={getOut(6)} bind:value={password} on:focus={clearError}>
         </div>
         <button on:click|preventDefault={handleCreateGame} in:fly={getIn(7)}>Create and Join Game</button>
     </div>
@@ -73,6 +85,7 @@
 
 <style>
     .request-error-container {
+        margin-top: 1em;
         height: 2em;
     }
 
@@ -126,6 +139,10 @@
 
     input:focus {
         border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .success {
+        border: 1px solid rgba(55, 254, 0, 0.25);        
     }
 
     button {
