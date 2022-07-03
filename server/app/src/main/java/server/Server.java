@@ -34,14 +34,14 @@ public class Server
         server.post("/create", context -> {
             JSONObject body = new JSONObject(context.body());
             
-            String displayName = (body.get("DisplayName")).toString();
-            String gameId = (body.get("GameID")).toString();
-            String password = (body.get("Password")).toString();
+            String displayName = (body.get("display_name")).toString();
+            String gameId = (body.get("game_id")).toString();
+            String password = (body.get("password")).toString();
 
             try 
             {    
                 String gameUrl = TicTacToeDb.createGame(this.db, gameId, password, displayName);
-                //start new ws listener at game url
+                registerNewGameAddress(server, gameUrl);
                 context.result((new JSONObject().accumulate("connection_url", gameUrl)).toString());
             } 
             catch (Exception e) 
@@ -53,9 +53,9 @@ public class Server
         server.post("/join", context -> {
             JSONObject body = new JSONObject(context.body());
             
-            String displayName = (body.get("DisplayName")).toString();
-            String gameId = (body.get("GameID")).toString();
-            String password = (body.get("Password")).toString();
+            String displayName = (body.get("display_name")).toString();
+            String gameId = (body.get("game_id")).toString();
+            String password = (body.get("password")).toString();
 
             try 
             {
@@ -66,6 +66,13 @@ public class Server
             {
                 throw new ConflictResponse(e.getMessage());                
             } 
+        });
+    }
+
+    private void registerNewGameAddress(Javalin server, String gameUrl)
+    {
+        server.ws(String.format("/%s", gameUrl), ws -> {
+            //new Game(ws);
         });
     }
 }

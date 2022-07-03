@@ -25,9 +25,9 @@
 
     async function handleCreateGame() {
         const request = {
-            DisplayName: displayName,
-            GameID: gameId,
-            Password: password
+            display_name: displayName,
+            game_id: gameId,
+            password: password
         }
 
         const response = await axios.post("http://localhost:3000/create", {
