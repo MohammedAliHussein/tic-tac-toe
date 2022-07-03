@@ -19,20 +19,25 @@ public class Server
 
     public Server()
     {
-        this.server = Javalin.create();
+        this.server = Javalin.create(config -> {
+            config.enableCorsForAllOrigins();
+        });
         this.db = TicTacToeDb.initDbConnection("tic-tac-toe");
         this.registerHandlers(this.server);
     }
     
     public void run()
     {
-        this.server.start(3000);
+        this.server.start(3001);
     }
 
     private void registerHandlers(Javalin server)
     {
         server.post("/create", context -> {
             JSONObject body = new JSONObject(context.body());
+            body = new JSONObject((body.get("data")).toString());
+
+            System.out.println(body);
             
             String displayName = (body.get("display_name")).toString();
             String gameId = (body.get("game_id")).toString();
@@ -52,6 +57,9 @@ public class Server
 
         server.post("/join", context -> {
             JSONObject body = new JSONObject(context.body());
+            body = new JSONObject((body.get("data")).toString());
+
+            System.out.println(body);
             
             String displayName = (body.get("display_name")).toString();
             String gameId = (body.get("game_id")).toString();

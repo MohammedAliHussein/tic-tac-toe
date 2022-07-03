@@ -6,6 +6,8 @@
     let displayName = "";
     let gameId = "";
     let password = "";
+    let requestError = false;
+    let requestErrorMessage = "";
 
     function getIn(delayIndex) {
         return {
@@ -30,31 +32,63 @@
             password: password
         }
 
-        const response = await axios.post("http://localhost:3000/join", {
+        const response = await axios.post("http://localhost:3001/join", {
             data: request,
             Headers: {
-                "Access-Control-Allow-Origin": "http://localhost"
+                "Access-Control-Allow-Origin": "*"
             }
+        }).catch((error) => {
+            requestErrorMessage = ((error.response).data).title;
+            requestError = true;
+            console.log(error.response);
         });
+    }
 
-        //handle error
+    function clearError() {
+        requestError = false;
     }
 </script>
 
-<div class="join">
-    <h1 in:fly={getIn(0)}>Join a Game</h1>
-    <div class="form">
-        <h4 in:fly={getIn(1)}>Display Name</h4>
-        <input type="text" placeholder="Display Name" in:fly={getIn(2)} bind:value={displayName}>
-        <h4 in:fly={getIn(3)} >Game ID</h4>
-        <input type="text" placeholder="Game ID" in:fly={getIn(4)}  bind:value={gameId}>
-        <h4 in:fly={getIn(5)} >Game Password</h4>
-        <input type="password" placeholder="Game Password" in:fly={getIn(6)} bind:value={password}>
+<div class="container">
+    <div class="join">
+        <h1 in:fly={getIn(0)}>Join a Game</h1>
+        <div class="form">
+            <h4 in:fly={getIn(1)}>Display Name</h4>
+            <input type="text" placeholder="Display Name" in:fly={getIn(2)} bind:value={displayName} on:focus={clearError}>
+            <h4 in:fly={getIn(3)} >Game ID</h4>
+            <input type="text" placeholder="Game ID" in:fly={getIn(4)}  bind:value={gameId} on:focus={clearError}>
+            <h4 in:fly={getIn(5)} >Game Password</h4>
+            <input type="password" placeholder="Game Password" in:fly={getIn(6)} bind:value={password} on:focus={clearError}>
+        </div>
+        <button on:click|preventDefault={handleJoinGame} in:fly={getIn(7)}>Join Game</button>
     </div>
-    <button on:click|preventDefault={handleJoinGame} in:fly={getIn(7)}>Join Game</button>
+    <div class="request-error-container">
+        {#if requestError}
+            <div class="request-error" in:fly={getIn(0)} out:fly={getOut(0)}>
+                <h5>{requestErrorMessage}</h5>
+            </div>
+        {/if}
+    </div>
 </div>
 
 <style>
+    .request-error-container {
+        margin-top: 1em;
+        height: 2em;
+    }
+
+    .request-error {
+        margin-top: 1em;
+        height: 2em;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+
     .join {
         display: flex;
         justify-content: center;
@@ -70,7 +104,7 @@
         margin-top: 0.8em;
     }
 
-    h1, h4 {
+    h1, h4, h5 {
         color: white;
         text-align: center;
         outline: none;
