@@ -10,8 +10,4 @@
     h1 {
         color: white;
     }
-
-    .title:focus {
-        outline: none;
-    }
 </style>

@@ -73,6 +73,7 @@
     h1, h4 {
         color: white;
         text-align: center;
+        outline: none;
     }
 
     input {
