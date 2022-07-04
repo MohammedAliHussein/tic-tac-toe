@@ -10,6 +10,7 @@ import com.mongodb.client.MongoDatabase;
 
 import org.json.*;
 
+import server.game.GameThread;
 import server.game.TicTacToe;
 
 public class Server 
@@ -48,7 +49,7 @@ public class Server
             try 
             {    
                 String gameUrl = TicTacToeDb.createGame(this.db, gameId, password, displayName);
-                registerNewGameAddress(server, gameUrl);
+                new GameThread(server, gameUrl).start(); //start new ws listening on different thread
                 context.result((new JSONObject().accumulate("connection_url", gameUrl)).toString());
             } 
             catch (Exception e) 
@@ -79,10 +80,10 @@ public class Server
         });
     }
 
-    private void registerNewGameAddress(Javalin server, String gameUrl)
-    {
-        server.ws(String.format("/%s", gameUrl), ws -> {
-            // new TicTacToe(ws).start();
-        });
-    }
+    // private void registerNewGameAddress(Javalin server, String gameUrl)
+    // {
+    //     server.ws(String.format("/%s", gameUrl), ws -> {
+    //         // new TicTacToe(ws).start();
+    //     });
+    // }
 }
