@@ -29,19 +29,19 @@
     animationWait();
 
     onMount(() => {
-        // connection = new WebSocket(`ws://localhost:3001/${connectionUrl}`);
-        // connection.addEventListener("open", handleConnectionOpen);
-        // connection.addEventListener("message", handleConnectionMessage);
+        connection = new WebSocket(`ws://localhost:3001/${connectionUrl}`);
+        connection.addEventListener("open", handleConnectionOpen);
+        connection.addEventListener("message", handleConnectionMessage);
     });
 </script>
 
 {#if showing}
     <div class="game-container" in:fly={{duration: 400, easing: circOut, y: 0}}>
-        <!-- {#if waiting}
+        {#if waiting}
             <Waiting connectedCount={connectedCount}/>
         {:else}
             <!-- <Countdown /> -->
-        <!-- {/if} --> -->
+        {/if}
         <!-- <TurnIndicator/> -->
         <Grid connection={connection}/>
         <!-- Icon indicator -->

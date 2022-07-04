@@ -20,6 +20,8 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
+import com.google.common.base.CharMatcher;
+
 public class TicTacToeDb 
 {
     private static Logger log = Logger.getLogger(TicTacToeDb.class.getName()); 
@@ -51,6 +53,8 @@ public class TicTacToeDb
         List<String> players = Arrays.asList(new String[] {displayName, ""});
 
         gameUrl = BCrypt.hashpw(gameName, BCrypt.gensalt());
+
+        gameUrl = CharMatcher.anyOf("$./").removeFrom(gameUrl);
 
         Document newGame = new Document("name", gameName)
                             .append("password", password)

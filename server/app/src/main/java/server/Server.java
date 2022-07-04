@@ -79,11 +79,4 @@ public class Server
             } 
         });
     }
-
-    // private void registerNewGameAddress(Javalin server, String gameUrl)
-    // {
-    //     server.ws(String.format("/%s", gameUrl), ws -> {
-    //         // new TicTacToe(ws).start();
-    //     });
-    // }
 }

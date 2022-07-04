@@ -23,6 +23,10 @@ public class TicTacToe
 
     public void start()
     {
+        System.out.println("\n\nStarted Game\n\n");
+
+        System.out.println(socket == null);
+
         listenForPlayers();
         waitForPlayers();
         // startGameLoop();
