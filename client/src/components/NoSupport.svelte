@@ -2,7 +2,7 @@
 </script>
 
 <div class="no-support">
-    <h1>NoSupport</h1>
+    <h1>No Support</h1>
     <h5>Smaller screen sizes not supported.</h5>
 </div>
 

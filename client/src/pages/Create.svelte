@@ -46,10 +46,9 @@
         }).catch((error) => {
             requestErrorMessage = ((error.response).data).title;
             requestError = true;
-            console.log(error.response);
         });
 
-        if(response.status === 200) {
+        if(response.status == 200) {
             success = "success";
             const url = response.data.connection_url;
             dispatcher("connectionUrl", url);

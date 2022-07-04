@@ -6,41 +6,55 @@ import java.util.List;
 import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsContext;
 
+import org.json.JSONObject;
+
 public class TicTacToe 
 {
-    WsConfig socket;
-    List<WsContext> connections;
+    private WsConfig socket;
+    private WsContext[] connections;
+    private int connectionCount;
 
     public TicTacToe(WsConfig socket)
     {
         this.socket = socket;
-        this.connections = new ArrayList<WsContext>();
+        this.connectionCount = 0;
+        this.connections = new WsContext[2];
     }    
 
     public void start()
     {
         listenForPlayers();
         waitForPlayers();
-        startGameLoop();
+        // startGameLoop();
+        // restartGame();
     }
 
     private void listenForPlayers()
     {
-        if(this.connections.size() < 2) 
-        {
-            this.socket.onConnect(ctx -> {
-                this.connections.add(ctx);
-            });
-        }
+        listenForConnections();
+    }
+
+    private void listenForConnections() 
+    {
+        this.socket.onConnect(context -> {
+            if(this.connectionCount <= 1)
+            {
+                this.connections[this.connectionCount] = context;
+                this.connectionCount++;
+            }
+        });
     }
 
     private void waitForPlayers()
     {
-        while(this.connections.size() != 2)
+        while (this.connectionCount != 2)
         {
-            for(WsContext ctx : this.connections)
+            for (WsContext wsContext : this.connections) 
             {
-                //Signal still waiting
+                if(wsContext != null && !wsContext.equals(null))    
+                {
+                    wsContext.send(this.getWaitingMessage());
+                }
             }
         }
     }
@@ -48,5 +62,15 @@ public class TicTacToe
     private void startGameLoop()
     {
 
+    }
+
+    private String getWaitingMessage()
+    {
+        JSONObject message = new JSONObject();
+
+        message.accumulate("waiting", this.connectionCount == 2);
+        message.accumulate("connected", this.connectionCount);
+
+        return message.toString();
     }
 }

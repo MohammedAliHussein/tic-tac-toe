@@ -10,6 +10,8 @@ import com.mongodb.client.MongoDatabase;
 
 import org.json.*;
 
+import server.game.TicTacToe;
+
 public class Server 
 {
     private Logger log = Logger.getLogger(Server.class.getName()); 
@@ -80,7 +82,7 @@ public class Server
     private void registerNewGameAddress(Javalin server, String gameUrl)
     {
         server.ws(String.format("/%s", gameUrl), ws -> {
-            //new Game(ws);
+            // new TicTacToe(ws).start();
         });
     }
 }
