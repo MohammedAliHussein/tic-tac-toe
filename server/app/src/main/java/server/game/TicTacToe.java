@@ -23,19 +23,10 @@ public class TicTacToe
 
     public void start()
     {
-        System.out.println("\n\nStarted Game\n\n");
-
-        System.out.println(socket == null);
-
-        listenForPlayers();
-        waitForPlayers();
+        listenForConnections();
+        // waitForPlayers();
         // startGameLoop();
         // restartGame();
-    }
-
-    private void listenForPlayers()
-    {
-        listenForConnections();
     }
 
     private void listenForConnections() 
@@ -45,6 +36,11 @@ public class TicTacToe
             {
                 this.connections[this.connectionCount] = context;
                 this.connectionCount++;
+                context.send("Hello");
+            } 
+            else 
+            {
+                context.send("Gooba");
             }
         });
     }

@@ -2,7 +2,7 @@
     import { fly } from "svelte/transition";
     import { circOut } from "svelte/easing";
 
-    export let connectedCount = 0;
+    export let connected = 0;
 
     function getIn(delayIndex) {
         return {
@@ -12,11 +12,19 @@
         }
     }
 
+    function getOut(delayIndex) {
+        return {
+            delay: delayIndex * 100,
+            y: -20,
+            easing: circOut
+        }
+    }
+
 </script>
 
 <div class="waiting">
-    <h3 in:fly={getIn(0)}>Waiting for Opponent.</h3>
-    <h5 in:fly={getIn(1)}>[{connectedCount}/2 Players]</h5>
+    <h3 in:fly={getIn(0)} out:fly={getOut(0)}>Waiting for Opponent.</h3>
+    <h5 in:fly={getIn(1)} out:fly={getOut(0)}>[{connected}/2 Players]</h5>
 </div>
 
 <style>

@@ -1,16 +1,20 @@
 <script>
     import { fly } from "svelte/transition";
     import { circOut } from "svelte/easing";
+    import { onMount } from "svelte";
     import Grid from "../components/Grid.svelte";
     import Waiting from "../components/Waiting.svelte";
-    import { onMount } from "svelte";
+    import TurnIndicator from "../components/TurnIndicator.svelte";
+    import IconIndicator from "../components/IconIndicator.svelte";
 
     export let connectionUrl = "";
 
     let connection = null;
     let showing = false;
     let waiting = true;
-    let connectedCount = 0;
+    let connected = 0;
+    let turn = "";
+    let icon = "X";
 
     function animationWait() {
         setTimeout(() => {
@@ -19,11 +23,31 @@
     }
 
     function handleConnectionOpen(event) {
-
+        console.log(event);
     }
 
     function handleConnectionMessage(event) {
-        console.log(event.data);
+        whileWaiting(event);
+        whilePlaying(event);
+    }
+
+    function whileWaiting(event) {
+        if(waiting == true) {
+            const message = JSON.parse(event.data);
+            console.log(message);
+            connected = message.connected;
+            if(connected == 2) {
+                setTimeout(() => {
+                    waiting = !(message.waiting);
+                }, 500);
+            } else {
+                waiting = !(message.waiting);
+            }
+        }
+    }
+
+    function whilePlaying(event) {
+
     }
 
     animationWait();
@@ -38,13 +62,12 @@
 {#if showing}
     <div class="game-container" in:fly={{duration: 400, easing: circOut, y: 0}}>
         {#if waiting}
-            <Waiting connectedCount={connectedCount}/>
+            <Waiting connected={connected}/>
         {:else}
-            <!-- <Countdown /> -->
+            <TurnIndicator turn={turn}/>
         {/if}
-        <!-- <TurnIndicator/> -->
         <Grid connection={connection}/>
-        <!-- Icon indicator -->
+        <IconIndicator icon={icon}/>
     </div>
 {/if}
 

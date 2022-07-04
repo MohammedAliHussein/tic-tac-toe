@@ -94,6 +94,11 @@ public class TicTacToeDb
         return (String)game.get("gameUrl");
     }
 
+    public static void deleteAllGames(MongoDatabase db)
+    {
+        db.getCollection("Active Games").deleteMany(new Document());
+    }
+
     private static Document getActiveGame(MongoCursor<Document> cursor, String gameName)
     {
         try 

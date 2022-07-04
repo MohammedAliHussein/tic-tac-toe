@@ -10,10 +10,10 @@ import com.mongodb.client.MongoDatabase;
 
 import org.json.*;
 
-import server.game.GameThread;
+import server.game.Game;
 import server.game.TicTacToe;
 
-public class Server 
+public class Server
 {
     private Logger log = Logger.getLogger(Server.class.getName()); 
 
@@ -39,9 +39,9 @@ public class Server
         server.post("/create", context -> {
             JSONObject body = new JSONObject(context.body());
             body = new JSONObject((body.get("data")).toString());
-
-            System.out.println(body);
             
+            log.info(String.format("Create request: %s\n", body));
+
             String displayName = (body.get("display_name")).toString();
             String gameId = (body.get("game_id")).toString();
             String password = (body.get("password")).toString();
@@ -49,8 +49,8 @@ public class Server
             try 
             {    
                 String gameUrl = TicTacToeDb.createGame(this.db, gameId, password, displayName);
-                new GameThread(server, gameUrl).start(); //start new ws listening on different thread
                 context.result((new JSONObject().accumulate("connection_url", gameUrl)).toString());
+                new Game(server, gameUrl).start(); //start new ws listening on different thread
             } 
             catch (Exception e) 
             {
@@ -62,7 +62,7 @@ public class Server
             JSONObject body = new JSONObject(context.body());
             body = new JSONObject((body.get("data")).toString());
 
-            System.out.println(body);
+            log.info(String.format("Join request: %s\n", body));
             
             String displayName = (body.get("display_name")).toString();
             String gameId = (body.get("game_id")).toString();
