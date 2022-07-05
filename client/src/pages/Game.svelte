@@ -8,6 +8,7 @@
     import IconIndicator from "../components/IconIndicator.svelte";
 
     export let connectionUrl = "";
+    export let displayName = "";
 
     let connection = null;
     let showing = false;
@@ -34,7 +35,8 @@
     function whileWaiting(event) {
         if(waiting == true) {
             const message = JSON.parse(event.data);
-            console.log(message);
+            icon = message.icon;
+            turn = message.turn;
             connected = message.connected;
             if(connected == 2) {
                 setTimeout(() => {
@@ -53,7 +55,7 @@
     animationWait();
 
     onMount(() => {
-        connection = new WebSocket(`ws://localhost:3001/${connectionUrl}`);
+        connection = new WebSocket(`ws://localhost:3001/${connectionUrl}?name=${displayName}`);
         connection.addEventListener("open", handleConnectionOpen);
         connection.addEventListener("message", handleConnectionMessage);
     });
@@ -66,7 +68,7 @@
         {:else}
             <TurnIndicator turn={turn}/>
         {/if}
-        <Grid connection={connection}/>
+        <Grid connection={connection} icon={icon}/>
         <IconIndicator icon={icon}/>
     </div>
 {/if}

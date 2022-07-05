@@ -51,7 +51,7 @@
         if(response.status == 200) {
             success = "success";
             const url = response.data.connection_url;
-            dispatcher("connectionUrl", url);
+            dispatcher("connectionUrl", { url, displayName });
             document.querySelector(".create-game-link").click();
         }
     }

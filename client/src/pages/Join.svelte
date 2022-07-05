@@ -49,10 +49,9 @@
         });
 
         if(response.status == 200) {
-            console.log("ok");
             success = "success";
             const url = response.data.connection_url;
-            dispatcher("connectionUrl", url);
+            dispatcher("connectionUrl", { url, displayName });
             document.querySelector(".join-game-link").click();
         }
     }

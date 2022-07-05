@@ -9,9 +9,11 @@
   let minWidth = 641;
   let clientWidth = window.innerWidth;
   let connectionUrl = "";
+  let displayName = "";
 
   function handleConnectionUrl(event) {
-    connectionUrl = event.detail;
+    connectionUrl = (event.detail).url;
+    displayName = (event.detail).displayName;
   }
 </script>
 
@@ -28,7 +30,7 @@
         <Create on:connectionUrl={handleConnectionUrl}/>
       </Route>
       <Route path="/game">
-        <Game connectionUrl={connectionUrl}/>
+        <Game connectionUrl={connectionUrl} displayName={displayName}/>
       </Route>
     {:else}
       <NoSupport /> 

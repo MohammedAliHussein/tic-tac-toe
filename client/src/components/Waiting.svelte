@@ -24,7 +24,8 @@
 
 <div class="waiting">
     <h3 in:fly={getIn(0)} out:fly={getOut(0)}>Waiting for Opponent.</h3>
-    <h5 in:fly={getIn(1)} out:fly={getOut(0)}>[{connected}/2 Players]</h5>
+    <h5 in:fly={getIn(1)} out:fly={getOut(1)}>[{connected}/2 Players]</h5>
+    <h5 in:fly={getIn(2)} out:fly={getOut(2)}>[Who goes first is chosen randomly]</h5>
 </div>
 
 <style>

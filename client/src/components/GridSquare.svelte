@@ -1,6 +1,9 @@
 <script>
+import { onMount } from "svelte";
+
+
     export let index = null;
-    export let icon = "X";
+    export let icon = "";
     export let connection = null;
 
     let borders = "";
@@ -23,6 +26,10 @@
     }
 
     determineBorders(index);
+
+    onMount(() => {
+        console.log(icon);
+    })
 </script>
 
 <svelte:head>
