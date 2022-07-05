@@ -22,6 +22,16 @@ public class Player
         this.name = name;
     }    
 
+    public boolean hasWon()
+    {
+        return false;
+    }
+
+    public void addMove(int cell)
+    {
+        this.moves.put(cell, cell);
+    }
+
     public Map<Integer, Integer> getMoves()
     {
         return this.moves;

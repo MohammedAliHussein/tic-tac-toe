@@ -21,7 +21,10 @@ public class Game extends Thread
     private String gameUrl;
     private Player[] players;
     private int connected;
-    private char[][] state;
+    private char[] state;
+    private boolean receivedChoice;
+    private Choice currentChoice;
+    private boolean hasEnded;
 
     public Game(Javalin server, String gameUrl)
     {
@@ -29,7 +32,10 @@ public class Game extends Thread
         this.gameUrl = gameUrl;
         this.players = new Player[2];
         this.connected = 0;
-        this.state = new char[3][3];
+        this.state = new char[9];
+        this.receivedChoice = false;
+        this.currentChoice = null;
+        this.hasEnded = false;
     }
 
     @Override
@@ -43,18 +49,82 @@ public class Game extends Thread
 
     private void gameLoop()
     {
-        // while(!hasEnded())
-        // {
-        //     //if first iteration, randomly choose first
-        //     //wait for choice
-        //     //update game state
-        //     //check for win
-        //     //send game state to players
-        //     //switch to next player if no win
-        // }
+        boolean isFirstChoice = true;
+        int currentMove = -1;
+
+        while(!this.hasEnded)
+        {
+            if(!this.hasEnded)
+            {
+                currentMove = chooseNextMove(isFirstChoice, currentMove);
+                signalPlayers(currentMove);
+                waitForChoice();
+                updateGameState(currentMove);
+                boolean hasWon = playerHasWon(currentMove);
+                sendNewMoveToPlayers(currentMove);
+                if(!hasWon) currentMove = chooseNextMove(isFirstChoice, currentMove);
+            }
+        }
     }
 
-    private void listenForPlayers()
+    private int chooseNextMove(boolean isFirstChoice, int currentMove)
+    {
+        if(isFirstChoice) 
+        {
+            return Math.random() <= 0.5 ? 1 : 0;
+        }
+
+        return currentMove == 1 ? 0 : 1;
+    }
+
+    private void signalPlayers(int currentMove)
+    {
+        for(Player player : this.players)
+        {
+            player.getConnection().send(getTurnMessage(currentMove));
+        }
+    }
+
+    private void waitForChoice()
+    {
+        while(!this.receivedChoice) 
+        {
+            System.out.println("still here");
+            sleep();
+        }
+
+        this.receivedChoice = false;
+    }
+
+    private void updateGameState(int currentMove)
+    {
+        char icon = this.currentChoice.getIcon();
+        int cell = this.currentChoice.getCell();
+
+        this.state[cell] = icon;
+        this.players[currentMove].addMove(cell);
+    }
+
+    private boolean playerHasWon(int currentMove)
+    {
+        if(this.players[currentMove].hasWon()) 
+        {
+            this.hasEnded = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void sendNewMoveToPlayers(int currentMove)
+    {
+        for(Player player : this.players)
+        {
+            player.getConnection().send(getNewMoveMessage(currentMove));
+        }
+    }
+
+    private void listenForPlayers() //listen on new thread incase waiting for player move so dont block
     {
         this.server.ws(String.format("/%s", this.gameUrl), ws -> {
             ws.onConnect(connection -> {
@@ -104,7 +174,8 @@ public class Game extends Thread
 
     private void handleNewMessage(WsMessageContext message)
     {
-
+        this.currentChoice = new Choice('X', 0);
+        this.receivedChoice = true;
     }
 
     private void handleClosedConnection(WsCloseContext close)
@@ -154,10 +225,34 @@ public class Game extends Thread
     {
         JSONObject message = new JSONObject();
 
-        message.accumulate("waiting", this.connected == 2);
+        message.accumulate("waiting", !(this.connected == 2));
         message.accumulate("connected", this.connected);
         message.accumulate("icon", player.getIcon());
-        message.accumulate("turn", player.getTurn());
+        message.accumulate("turn", player.getName());
+
+        return message.toString();
+    }
+
+    private String getTurnMessage(int currentMove)
+    {
+        JSONObject message = new JSONObject();
+
+        message.accumulate("turn", this.players[currentMove].getName());
+        message.accumulate("icon", "");
+        message.accumulate("cell", "");
+        message.accumulate("ended", this.hasEnded);
+
+        return message.toString();
+    }
+
+    private String getNewMoveMessage(int currentMove)
+    {
+        JSONObject message = new JSONObject();
+
+        message.accumulate("turn", this.players[currentMove].getName());
+        message.accumulate("icon", this.currentChoice.getIcon());
+        message.accumulate("cell", this.currentChoice.getCell());
+        message.accumulate("ended", this.hasEnded);
 
         return message.toString();
     }

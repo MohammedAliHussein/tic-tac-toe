@@ -14,7 +14,7 @@
     let showing = false;
     let waiting = true;
     let connected = 0;
-    let turn = "";
+    let turn = false;
     let icon = "X";
 
     function animationWait() {
@@ -40,16 +40,16 @@
             connected = message.connected;
             if(connected == 2) {
                 setTimeout(() => {
-                    waiting = !(message.waiting);
+                    waiting = message.waiting;
                 }, 500);
             } else {
-                waiting = !(message.waiting);
+                waiting = message.waiting;
             }
         }
     }
 
     function whilePlaying(event) {
-
+        console.log(event.data);
     }
 
     animationWait();
@@ -66,7 +66,7 @@
         {#if waiting}
             <Waiting connected={connected}/>
         {:else}
-            <TurnIndicator turn={turn}/>
+            <TurnIndicator connection={connection} turn={turn}/>
         {/if}
         <Grid connection={connection} icon={icon}/>
         <IconIndicator icon={icon}/>

@@ -1,6 +1,5 @@
 <script>
-import { onMount } from "svelte";
-
+    import { onDestroy, onMount } from "svelte";
 
     export let index = null;
     export let icon = "";
@@ -8,8 +7,17 @@ import { onMount } from "svelte";
 
     let borders = "";
     let opacity = "opacity: 0;";
+    let wasSelected = false;
+    let chosen = "";
 
-    function handleSquareChoice() {}
+    function handleSquareChoice() {
+        if(!wasSelected) {
+            connection.send("ok");
+            chosen = "chosen";
+            opacity = "opacity: 1";
+            wasSelected = true;
+        }
+    }
 
     function determineBorders(index) {
         if (index == 0) borders = "top-left";
@@ -18,25 +26,39 @@ import { onMount } from "svelte";
     }
 
     function handleMouseOver() {
-        opacity = "opacity: 1";
+        if(!wasSelected) {
+            opacity = "opacity: 1";
+        }
     }
 
     function handleMouseLeave() {
-        opacity = "opacity: 0";
+        if(!wasSelected) {
+            opacity = "opacity: 0";
+        }
+    }
+
+    function handleMessage(event) {
+        // const message = JSON.parse(event.detail);
+        // if(message.cell == index) {
+        // } 
     }
 
     determineBorders(index);
 
     onMount(() => {
-        console.log(icon);
-    })
+        connection.addEventListener("message", handleMessage);
+    });
+
+    onDestroy(() => {
+        connection.removeEventListener("message", handleMessage);
+    });
 </script>
 
 <svelte:head>
     <script src="https://kit.fontawesome.com/3ade200140.js" crossorigin="anonymous"></script>
 </svelte:head>
 
-<div class={`grid-square ${borders}`} on:click={handleSquareChoice} on:mouseover={handleMouseOver} on:focus={() => {/**/}} on:mouseleave={handleMouseLeave}>
+<div class={`grid-square ${borders} ${chosen}`} on:click={handleSquareChoice} on:mouseover={handleMouseOver} on:focus={() => {/**/}} on:mouseleave={handleMouseLeave}>
     {#if icon === "O"}
         <i style={opacity} class="fa-solid fa-o fa-8x"></i>
     {:else}
@@ -79,5 +101,13 @@ import { onMount } from "svelte";
     .top-left {
         border-top: 1px solid rgba(255, 255, 255, 0.053);
         border-left: 1px solid rgba(255, 255, 255, 0.053);
+    }
+
+    .chosen {
+        cursor: not-allowed;
+    }
+
+    .chosen:hover {
+        background-color: rgba(255, 0, 0, 0.1);
     }
 </style>
