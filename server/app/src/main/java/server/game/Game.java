@@ -57,12 +57,13 @@ public class Game extends Thread
             if(!this.hasEnded)
             {
                 currentMove = chooseNextMove(isFirstChoice, currentMove);
+                isFirstChoice = false;
                 signalPlayers(currentMove);
                 waitForChoice();
                 updateGameState(currentMove);
                 boolean hasWon = playerHasWon(currentMove);
                 sendNewMoveToPlayers(currentMove);
-                if(!hasWon) currentMove = chooseNextMove(isFirstChoice, currentMove);
+                // if(!hasWon) currentMove = chooseNextMove(isFirstChoice, currentMove);
             }
         }
     }
@@ -71,7 +72,7 @@ public class Game extends Thread
     {
         if(isFirstChoice) 
         {
-            return Math.random() <= 0.5 ? 1 : 0;
+            return Math.random() < 0.5 ? 1 : 0;
         }
 
         return currentMove == 1 ? 0 : 1;
@@ -89,7 +90,7 @@ public class Game extends Thread
     {
         while(!this.receivedChoice) 
         {
-            System.out.println("still here");
+            System.out.println("Waiting...");
             sleep();
         }
 
