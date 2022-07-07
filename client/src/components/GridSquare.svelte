@@ -2,8 +2,8 @@
     import { onDestroy, onMount } from "svelte";
 
     export let index = null;
-    export let icon = "";
     export let connection = null;
+    export let icon = "";
 
     let borders = "";
     let opacity = "opacity: 0;";
@@ -12,7 +12,7 @@
 
     function handleSquareChoice() {
         if(!wasSelected) {
-            connection.send("ok");
+            connection.send(`{"type": "new_move", "cell": "${index}"}`);
             chosen = "chosen";
             opacity = "opacity: 1";
             wasSelected = true;
@@ -38,9 +38,14 @@
     }
 
     function handleMessage(event) {
-        // const message = JSON.parse(event.detail);
-        // if(message.cell == index) {
-        // } 
+        const message = JSON.parse(event.data);
+
+        if(message.type == "new_move" && message.cell == index) {
+            icon = message.icon;
+            chosen = "chosen";
+            opacity = "opacity: 1";
+            wasSelected = true;
+        }
     }
 
     determineBorders(index);
@@ -59,7 +64,7 @@
 </svelte:head>
 
 <div class={`grid-square ${borders} ${chosen}`} on:click={handleSquareChoice} on:mouseover={handleMouseOver} on:focus={() => {/**/}} on:mouseleave={handleMouseLeave}>
-    {#if icon === "O"}
+    {#if icon == "O"}
         <i style={opacity} class="fa-solid fa-o fa-8x"></i>
     {:else}
         <i style={opacity} class="fa-solid fa-xmark fa-10x"></i>

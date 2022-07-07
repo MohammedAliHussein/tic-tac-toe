@@ -11,13 +11,20 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
+import server.database.TicTacToeDb;
+
 import org.json.JSONObject;
+
+import com.mongodb.client.MongoDatabase;
+
+import org.bson.*;
 
 public class Game extends Thread
 {
     Logger log = Logger.getLogger(Game.class.getName());
 
     private Javalin server;
+    private MongoDatabase db;
     private String gameUrl;
     private Player[] players;
     private int connected;
@@ -25,10 +32,12 @@ public class Game extends Thread
     private boolean receivedChoice;
     private Choice currentChoice;
     private boolean hasEnded;
+    private int totalMoves;
 
-    public Game(Javalin server, String gameUrl)
+    public Game(Javalin server, String gameUrl, MongoDatabase db)
     {
         this.server = server;
+        this.db = db;
         this.gameUrl = gameUrl;
         this.players = new Player[2];
         this.connected = 0;
@@ -36,6 +45,7 @@ public class Game extends Thread
         this.receivedChoice = false;
         this.currentChoice = null;
         this.hasEnded = false;
+        this.totalMoves = 0;
     }
 
     @Override
@@ -54,18 +64,20 @@ public class Game extends Thread
 
         while(!this.hasEnded)
         {
-            if(!this.hasEnded)
-            {
-                currentMove = chooseNextMove(isFirstChoice, currentMove);
-                isFirstChoice = false;
-                signalPlayers(currentMove);
-                waitForChoice();
-                updateGameState(currentMove);
-                boolean hasWon = playerHasWon(currentMove);
-                sendNewMoveToPlayers(currentMove);
-                // if(!hasWon) currentMove = chooseNextMove(isFirstChoice, currentMove);
-            }
+            currentMove = chooseNextMove(isFirstChoice, currentMove);
+            isFirstChoice = false;
+            signalPlayers(currentMove);
+            waitForChoice();
+            updateGameState(currentMove);
+            sendNewMoveToPlayers(currentMove);
+            gameEnded(currentMove);
+            if(this.hasEnded) break;
         }
+    }
+
+    private void deleteGame()
+    {
+        TicTacToeDb.deleteGame(this.db, gameUrl);
     }
 
     private int chooseNextMove(boolean isFirstChoice, int currentMove)
@@ -90,7 +102,6 @@ public class Game extends Thread
     {
         while(!this.receivedChoice) 
         {
-            System.out.println("Waiting...");
             sleep();
         }
 
@@ -99,11 +110,17 @@ public class Game extends Thread
 
     private void updateGameState(int currentMove)
     {
-        char icon = this.currentChoice.getIcon();
+        char icon = this.players[currentMove].getIcon();
         int cell = this.currentChoice.getCell();
 
         this.state[cell] = icon;
         this.players[currentMove].addMove(cell);
+    }
+
+    private void gameEnded(int currentMove)
+    {
+        playerHasWon(currentMove);
+        playersHaveTied(currentMove);
     }
 
     private boolean playerHasWon(int currentMove)
@@ -115,6 +132,15 @@ public class Game extends Thread
         }
 
         return false;
+    }
+
+    private void playersHaveTied(int currentMove)
+    {
+        if(this.totalMoves == 9 && !playerHasWon(currentMove))
+        {
+            this.hasEnded = true;
+            signalGameTie();
+        }
     }
 
     private void sendNewMoveToPlayers(int currentMove)
@@ -148,16 +174,17 @@ public class Game extends Thread
         {
             for(Player player : this.players)
             {
-                if(player != null)
+                if(player != null && !player.getSentInitialId())
                 {
                     player.getConnection().send(getWaitingMessage(player));
+                    player.setSentInitialId(true);
                 }
             }
 
             sleep();
         }
 
-        signalCountdown();
+        signalStarting();
     }
 
     private void handleNewConnection(WsConnectContext connection)
@@ -175,8 +202,17 @@ public class Game extends Thread
 
     private void handleNewMessage(WsMessageContext message)
     {
-        this.currentChoice = new Choice('X', 0);
-        this.receivedChoice = true;
+        JSONObject _message = new JSONObject(message.message());
+
+        String type = _message.get("type").toString();
+
+        if(type != null && type.equals("new_move"))
+        {
+            int cell = Integer.parseInt(_message.get("cell").toString());
+            this.currentChoice = new Choice(cell);
+            this.receivedChoice = true;
+            this.totalMoves++;
+        }
     }
 
     private void handleClosedConnection(WsCloseContext close)
@@ -184,30 +220,28 @@ public class Game extends Thread
 
     }
 
-    private void deleteGame()
-    {
-
-    }
-
-    private void signalCountdown()
+    private void signalStarting()
     {
         for(Player player : this.players)
         {
             if(player != null)
             {
-                player.getConnection().send(getWaitingMessage(player));
+                player.getConnection().send(getStartingMessage(player));
             }
+        }
+    }
+
+    private void signalGameTie()
+    {
+        for (Player player : this.players) 
+        {
+            player.getConnection().send(getTieMessage());
         }
     }
 
     private char determineIcon()
     {
-        if(this.connected == 0)
-        {
-            return 'X';
-        }
-
-        return 'O';
+        return this.connected == 0 ? 'X' : 'O';
     }
 
     private void sleep()
@@ -226,10 +260,20 @@ public class Game extends Thread
     {
         JSONObject message = new JSONObject();
 
-        message.accumulate("waiting", !(this.connected == 2));
-        message.accumulate("connected", this.connected);
+        message.accumulate("type", "waiting");
+
         message.accumulate("icon", player.getIcon());
-        message.accumulate("turn", player.getName());
+
+        return message.toString();
+    }
+
+    private String getStartingMessage(Player player)
+    {
+        JSONObject message = new JSONObject();
+
+        message.accumulate("type", "starting");
+
+        message.accumulate("icon", player.getIcon());
 
         return message.toString();
     }
@@ -238,10 +282,9 @@ public class Game extends Thread
     {
         JSONObject message = new JSONObject();
 
-        message.accumulate("turn", this.players[currentMove].getName());
-        message.accumulate("icon", "");
-        message.accumulate("cell", "");
-        message.accumulate("ended", this.hasEnded);
+        message.accumulate("type", "turn");
+
+        message.accumulate("player", this.players[currentMove].getName());
 
         return message.toString();
     }
@@ -250,10 +293,20 @@ public class Game extends Thread
     {
         JSONObject message = new JSONObject();
 
-        message.accumulate("turn", this.players[currentMove].getName());
-        message.accumulate("icon", this.currentChoice.getIcon());
+        message.accumulate("type", "new_move");
+
+        message.accumulate("icon", this.players[currentMove].getIcon());
+
         message.accumulate("cell", this.currentChoice.getCell());
-        message.accumulate("ended", this.hasEnded);
+
+        return message.toString();
+    }
+
+    private String getTieMessage()
+    {
+        JSONObject message = new JSONObject();
+
+        message.accumulate("type", "tie");
 
         return message.toString();
     }

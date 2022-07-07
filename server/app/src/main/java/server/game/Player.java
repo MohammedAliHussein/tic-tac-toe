@@ -12,6 +12,7 @@ public class Player
     private boolean turn;
     private char icon;
     private String name;
+    private boolean sentInitialId;
 
     public Player(WsContext connection, char icon, String name)
     {
@@ -20,6 +21,7 @@ public class Player
         this.turn = false;
         this.icon = icon;
         this.name = name;
+        this.sentInitialId = false;
     }    
 
     public boolean hasWon()
@@ -57,6 +59,11 @@ public class Player
         return this.name;
     }
 
+    public boolean getSentInitialId()
+    {
+        return this.sentInitialId;
+    }
+
     public void setMoves(Map<Integer, Integer> moves)
     {
         this.moves = moves;
@@ -80,5 +87,10 @@ public class Player
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public void setSentInitialId(boolean sentInitialId)
+    {
+        this.sentInitialId = sentInitialId;
     }
 }

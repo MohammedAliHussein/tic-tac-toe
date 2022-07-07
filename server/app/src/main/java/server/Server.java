@@ -33,6 +33,26 @@ public class Server
         this.server.start(3001);
     }
 
+    public Javalin getServer()
+    {
+        return this.server;
+    }
+
+    public MongoDatabase getDb() 
+    {
+        return this.db;
+    }
+
+    public void setServer(Javalin server)
+    {
+        this.server = server;
+    }
+
+    public void setDb(MongoDatabase db)
+    {
+        this.db = db;
+    }
+
     private void registerHandlers(Javalin server)
     {
         server.post("/create", context -> {
@@ -49,7 +69,7 @@ public class Server
             {    
                 String gameUrl = TicTacToeDb.createGame(this.db, gameId, password, displayName);
                 context.result((new JSONObject().accumulate("connection_url", gameUrl)).toString());
-                new Game(server, gameUrl).start(); //start new ws listening on different thread
+                new Game(server, gameUrl, this.db).start(); //start new ws listening on different thread
             } 
             catch (Exception e) 
             {

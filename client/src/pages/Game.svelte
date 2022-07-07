@@ -13,9 +13,7 @@
     let connection = null;
     let showing = false;
     let waiting = true;
-    let connected = 0;
-    let turn = false;
-    let icon = "X";
+    let icon = "";
 
     function animationWait() {
         setTimeout(() => {
@@ -28,28 +26,16 @@
     }
 
     function handleConnectionMessage(event) {
-        whileWaiting(event);
-        whilePlaying(event);
-    }
+        const message = JSON.parse(event.data);
 
-    function whileWaiting(event) {
-        if(waiting == true) {
-            const message = JSON.parse(event.data);
+        if(message.type == "waiting") {
             icon = message.icon;
-            turn = message.turn;
-            connected = message.connected;
-            if(connected == 2) {
-                setTimeout(() => {
-                    waiting = message.waiting;
-                }, 500);
-            } else {
-                waiting = message.waiting;
-            }
         }
-    }
 
-    function whilePlaying(event) {
-        console.log(event.data);
+        if(message.type == "starting") {
+            icon = message.icon;
+            waiting = false;
+        }
     }
 
     animationWait();
@@ -64,12 +50,12 @@
 {#if showing}
     <div class="game-container" in:fly={{duration: 400, easing: circOut, y: 0}}>
         {#if waiting}
-            <Waiting connected={connected}/>
+            <Waiting />
         {:else}
-            <TurnIndicator connection={connection} turn={turn}/>
+            <TurnIndicator connection={connection} displayName={displayName}/>
         {/if}
         <Grid connection={connection} icon={icon}/>
-        <IconIndicator icon={icon}/>
+        <IconIndicator connection={connection} icon={icon}/>
     </div>
 {/if}
 

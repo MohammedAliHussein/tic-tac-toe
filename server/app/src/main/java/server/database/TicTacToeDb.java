@@ -22,6 +22,9 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import com.google.common.base.CharMatcher;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+
 public class TicTacToeDb 
 {
     private static Logger log = Logger.getLogger(TicTacToeDb.class.getName()); 
@@ -92,6 +95,13 @@ public class TicTacToeDb
         collection.updateOne(eq("name", gameName), set("players", players));
 
         return (String)game.get("gameUrl");
+    }
+
+    public static void deleteGame(MongoDatabase db, String gameUrl)
+    {
+        MongoCollection<Document> collection = db.getCollection("Active Games");
+        Bson filter = Filters.and(Filters.gt("gameUrl", gameUrl));
+        collection.deleteMany(filter);
     }
 
     public static void deleteAllGames(MongoDatabase db)
