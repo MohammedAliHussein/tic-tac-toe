@@ -43,38 +43,40 @@
     function handleMessage(event) {
         const message = JSON.parse(event.data);
 
-        if(message.type == "new_move" && message.cell == index) {
-            icon = message.icon;
-            chosen = "chosen";
-            opacity = "opacity: 1";
-            wasSelected = true;
-        }
-
-        if(message.type == "starting") waiting = false;
-
-        if(message.type == "turn") {
-            if(message.player !== displayName) {
-                waiting = true;
-            } else {
+        switch(message.type) {
+            case "new_move":
+                if(message.cell == index) {
+                    icon = message.icon;
+                    chosen = "chosen";
+                    opacity = "opacity: 1";
+                    wasSelected = true;
+                }
+                break;
+            case "starting":
                 waiting = false;
-            }
-        }
-
-        if(message.type == "win" || message.type == "tie") {
-            waiting = true;
-            if(message.type == "win") {
-                const seq = (message.win_sequence);
-                console.log(seq)
-                for(let i = 0; i < seq.length; i++) {
-                    if(seq[i] === 0) console.log(seq[i]);
-
-                    if(seq[i] == index) {
+                break;
+            case "turn":
+                if(message.player !== displayName) {
+                    waiting = true;
+                } else {
+                    waiting = false;
+                }
+                break;
+            case "win":
+                waiting = true;
+                const sequence = (message.win_sequence);
+                for(let i = 0; i < sequence.length; i++) {
+                    if(sequence[i] == index && sequence[i] !== " ") {
+                        console.log(`${sequence[i]} ${typeof(sequence[i])}`);
                         setTimeout(() => {
                             win = "win";
                         }, (100 * i) + 100);
                     } 
                 }
-            }
+                break;
+            case "tie":
+                waiting = true;
+                break;
         }
     }
 
