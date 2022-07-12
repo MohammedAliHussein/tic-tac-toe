@@ -1,11 +1,15 @@
 <script>
     import { fly } from "svelte/transition";
     import { circOut } from "svelte/easing";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
+
     import Grid from "../components/Grid.svelte";
     import Waiting from "../components/Waiting.svelte";
     import TurnIndicator from "../components/TurnIndicator.svelte";
     import IconIndicator from "../components/IconIndicator.svelte";
+    import Win from "../components/Win.svelte";
+    import Disconnect from "../components/Disconnect.svelte";
+    import Tie from "../components/Tie.svelte";
 
     export let connectionUrl = "";
     export let displayName = "";
@@ -14,6 +18,10 @@
     let showing = false;
     let waiting = true;
     let icon = "";
+    let tie = false;
+    let win = false;
+    let disconnect = false;
+    let winner = "";
 
     function animationWait() {
         setTimeout(() => {
@@ -28,13 +36,24 @@
     function handleConnectionMessage(event) {
         const message = JSON.parse(event.data);
 
-        if(message.type == "waiting") {
-            icon = message.icon;
-        }
-
-        if(message.type == "starting") {
-            icon = message.icon;
-            waiting = false;
+        switch(message.type) {
+            case "waiting":
+                icon = message.icon;
+                break;
+            case "starting":
+                icon = message.icon;
+                waiting = false;
+                break;
+            case "tie":
+                tie = true;
+                break;
+            case "win":
+                winner = message.player;
+                win = true;
+                break;
+            case "disconnect":
+                disconnect = true;
+                break;
         }
     }
 
@@ -45,6 +64,11 @@
         connection.addEventListener("open", handleConnectionOpen);
         connection.addEventListener("message", handleConnectionMessage);
     });
+
+    onDestroy(() => {
+        connection.removeEventListener("open", handleConnectionOpen);        
+        connection.removeEventListener("message", handleConnectionMessage);
+    });
 </script>
 
 {#if showing}
@@ -52,9 +76,17 @@
         {#if waiting}
             <Waiting />
         {:else}
-            <TurnIndicator connection={connection} displayName={displayName}/>
+            {#if win}
+                <Win winner={winner}/>
+            {:else if tie}
+                <Tie />
+            {:else if disconnect}
+                <Disconnect />
+            {:else}
+                <TurnIndicator connection={connection} displayName={displayName}/>
+            {/if}
         {/if}
-        <Grid connection={connection} icon={icon}/>
+        <Grid connection={connection} icon={icon} displayName={displayName}/>
         <IconIndicator connection={connection} icon={icon}/>
     </div>
 {/if}

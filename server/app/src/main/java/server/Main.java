@@ -16,12 +16,14 @@ public class Main
 
         // try
         // {
-        //     TicTacToeDb.deleteAllGames(db);
+        //     TicTacToeDb.deleteGame(db, "2a102K1oLJyCoaA62XAzruIqONCzOZ8E1EP6i9Dg59ByUJ5Rlw0cItBW");
         // }
         // catch (Exception e)
         // {
         //     System.out.println(String.format("\n\n%s\n", e.getMessage()));
         // }
+
+        // 2a102K1oLJyCoaA62XAzruIqONCzOZ8E1EP6i9Dg59ByUJ5Rlw0cItBW
 
         new Server().run();
     }

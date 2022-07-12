@@ -71,7 +71,6 @@ public class Game extends Thread
             updateGameState(currentMove);
             sendNewMoveToPlayers(currentMove);
             gameEnded(currentMove);
-            if(this.hasEnded) break;
         }
     }
 
@@ -128,6 +127,7 @@ public class Game extends Thread
         if(this.players[currentMove].hasWon()) 
         {
             this.hasEnded = true;
+            signalPlayerWin(this.players[currentMove]);
             return true;
         }
 
@@ -151,7 +151,7 @@ public class Game extends Thread
         }
     }
 
-    private void listenForPlayers() //listen on new thread incase waiting for player move so dont block
+    private void listenForPlayers() 
     {
         this.server.ws(String.format("/%s", this.gameUrl), ws -> {
             ws.onConnect(connection -> {
@@ -217,11 +217,13 @@ public class Game extends Thread
 
     private void handleClosedConnection(WsCloseContext close)
     {
-
+        
     }
 
     private void signalStarting()
     {
+        sleep();
+
         for(Player player : this.players)
         {
             if(player != null)
@@ -239,6 +241,14 @@ public class Game extends Thread
         }
     }
 
+    private void signalPlayerWin(Player _player)
+    {
+        for (Player player : this.players) 
+        {
+            player.getConnection().send(getWinMessage(_player));
+        }
+    }
+
     private char determineIcon()
     {
         return this.connected == 0 ? 'X' : 'O';
@@ -248,7 +258,7 @@ public class Game extends Thread
     {
         try 
         {
-            Thread.sleep(800);
+            Thread.sleep(1000);
         } 
         catch (InterruptedException e) 
         {
@@ -309,5 +319,18 @@ public class Game extends Thread
         message.accumulate("type", "tie");
 
         return message.toString();
+    }
+
+    private String getWinMessage(Player player)
+    {
+        JSONObject message = new JSONObject();
+
+        message.accumulate("type", "win");
+
+        message.accumulate("player", player.getName());
+
+        message.accumulate("win_sequence", player.getWinSequence());
+
+        return message.toString();        
     }
 }

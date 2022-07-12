@@ -3,11 +3,13 @@
 
     export let connection = null;
     export let icon = "";
+    export let displayName = "";
+
 </script>
 
 <div class="grid">
     {#each Array(9) as _, index (index)}
-        <GridSquare index={index} connection={connection} icon={icon}/>
+        <GridSquare index={index} connection={connection} icon={icon} displayName={displayName}/>
     {/each}
 </div>
 

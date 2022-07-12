@@ -1,5 +1,8 @@
 package server.database;
 
+import static com.mongodb.client.model.Filters.eq;
+
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -100,8 +103,17 @@ public class TicTacToeDb
     public static void deleteGame(MongoDatabase db, String gameUrl)
     {
         MongoCollection<Document> collection = db.getCollection("Active Games");
-        Bson filter = Filters.and(Filters.gt("gameUrl", gameUrl));
-        collection.deleteMany(filter);
+
+        Bson query = eq("gameUrl", gameUrl);
+
+        try 
+        {    
+            collection.deleteOne(query);
+        } 
+        catch (MongoException me) 
+        {
+            log.info(String.format("Unable to delete due to an error: %s", me));
+        }
     }
 
     public static void deleteAllGames(MongoDatabase db)

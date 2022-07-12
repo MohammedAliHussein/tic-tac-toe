@@ -4,14 +4,17 @@
     export let index = null;
     export let connection = null;
     export let icon = "";
+    export let displayName = "";
 
     let borders = "";
     let opacity = "opacity: 0;";
     let wasSelected = false;
     let chosen = "";
+    let waiting = true;
+    let win = "";
 
     function handleSquareChoice() {
-        if(!wasSelected) {
+        if(!wasSelected && !waiting) {
             connection.send(`{"type": "new_move", "cell": "${index}"}`);
             chosen = "chosen";
             opacity = "opacity: 1";
@@ -46,6 +49,33 @@
             opacity = "opacity: 1";
             wasSelected = true;
         }
+
+        if(message.type == "starting") waiting = false;
+
+        if(message.type == "turn") {
+            if(message.player !== displayName) {
+                waiting = true;
+            } else {
+                waiting = false;
+            }
+        }
+
+        if(message.type == "win" || message.type == "tie") {
+            waiting = true;
+            if(message.type == "win") {
+                const seq = (message.win_sequence);
+                console.log(seq)
+                for(let i = 0; i < seq.length; i++) {
+                    if(seq[i] === 0) console.log(seq[i]);
+
+                    if(seq[i] == index) {
+                        setTimeout(() => {
+                            win = "win";
+                        }, (100 * i) + 100);
+                    } 
+                }
+            }
+        }
     }
 
     determineBorders(index);
@@ -65,9 +95,9 @@
 
 <div class={`grid-square ${borders} ${chosen}`} on:click={handleSquareChoice} on:mouseover={handleMouseOver} on:focus={() => {/**/}} on:mouseleave={handleMouseLeave}>
     {#if icon == "O"}
-        <i style={opacity} class="fa-solid fa-o fa-8x"></i>
+        <i style={opacity} id={win} class="fa-solid fa-o fa-8x"></i>
     {:else}
-        <i style={opacity} class="fa-solid fa-xmark fa-10x"></i>
+        <i style={opacity} id={win} class="fa-solid fa-xmark fa-10x"></i>
     {/if}
 </div>
 
@@ -77,6 +107,10 @@
         color: rgb(255, 255, 255);
         transition: 0.2s cubic-bezier(0, 0.55, 0.45, 1);
         opacity: 0;
+    }
+
+    #win {
+        color: rgb(47, 255, 50);
     }
 
     .grid-square {
