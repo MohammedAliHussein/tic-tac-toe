@@ -1,19 +1,6 @@
 <script>
-    import { onMount } from "svelte";
-
     export let icon = null;
     export let connection = null;
-
-    // function handleMessage(event) {
-    //     const message = event.data;
-    //     if(icon === null) {
-    //         icon = message.icon;
-    //     }
-    // }
-
-    // onMount(() => {
-    //     connection.addEventListener("message", handleMessage);
-    // });
 </script>
 
 <svelte:head>
